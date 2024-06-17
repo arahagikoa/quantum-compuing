@@ -46,25 +46,29 @@ namespace GroversAlgorithm {
         return iterations; 
     }
 
-    // Operacja ReflectAboutMarked implementuje odbicie względem oznaczonego stanu.
     operation ReflectAboutMarked(inputQubits : Qubit[]) : Unit {
-        Message("Odbicie względem oznaczonego stanu..."); // Wyświetla wiadomość o rozpoczęciu odbicia.
-        use outputQubit = Qubit(); // Alokuje dodatkowy kubit.
+        Message("Odbicie względem oznaczonego stanu..."); 
+        use outputQubit = Qubit();
         within {
-            // Inicjalizuje outputQubit do stanu (|0⟩ - |1⟩) / √2.
-            X(outputQubit); // Aplikuje bramkę X, zmieniając stan |0⟩ na |1⟩.
-            H(outputQubit); // Aplikuje bramkę Hadamarda, przekształcając stan na superpozycję.
-            // Aplikuje bramkę X na co drugim kubicie.
+            //Wyjściowy kubit outputQubit jest początkowo w stanie |0⟩. Operacja X(outputQubit) zmienia jego stan na |1⟩, 
+            //a następnie operacja Hadamarda H(outputQubit) przekształca go w stan superpozycji (1/√2) * (|0⟩ - |1⟩), 
+            //który jest nazywany stanem minusowym (|-⟩).
+            X(outputQubit); 
+            H(outputQubit); 
+            // Pętla for przechodzi przez kubity inputQubits co drugi kubit (indeksy 0, 2, 4, ...) i aplikuje na nie operację X.
+            // To przekształca wybrane kubity wejściowe z |0⟩ na |1⟩ lub z |1⟩ na |0⟩.
             for q in inputQubits[...2...] {
                 X(q);
             }
         } apply {
-            Controlled X(inputQubits, outputQubit); // Aplikuje kontrolowaną bramkę X, zmieniając fazę outputQubit, jeśli wszystkie inputQubits są w oznaczonym stanie.
+            Controlled X(inputQubits, outputQubit);
+            //Operacja Controlled X(inputQubits, outputQubit) (CNOT) działa w taki sposób, że odwraca stan outputQubit tylko wtedy, 
+            //gdy wszystkie inputQubits są w stanie |1⟩. 
         }
     }
 
     // Operacja PrepareUniform przygotowuje kubity w jednolitej superpozycji.
-    operation PrepareUniform(inputQubits : Qubit[]) : Unit is Adj + Ctl {
+    operation PrepareUniform(inputQubits : Qubit[]) : Unit is Adj + Ctl { //adjont do odwrotności oraz ctl do controlled.
         for q in inputQubits {
             H(q); // Aplikuje bramkę Hadamarda, tworząc jednolitą superpozycję.
         }
@@ -72,9 +76,7 @@ namespace GroversAlgorithm {
 
     // Operacja ReflectAboutAllOnes implementuje odbicie względem stanu wszystkich jedynek.
     // Stan wszystkich jedynek to stan w którym wszystkie qubity są w stanie |1>. Dla n qubitów jest to stan |111...1>
-    // Operacja odbicia względem stanu wszystkich jedynek zmienia fazę tego konkretnego stanu na przeciwną. Jeśli amplituda stanu alpha, po odbiciu wynosi ona -alpha
-    // podczas gdy amplitudy wszystkich innych stanów pozostają niezmienione
-
+    // Operacja odbicia względem stanu wszystkich jedynek zmienia fazę tego konkretnego stanu na przeciwną. 
     operation ReflectAboutAllOnes(inputQubits : Qubit[]) : Unit {
         Controlled Z(Most(inputQubits), Tail(inputQubits)); // Aplikuje kontrolowaną bramkę Z do ostatniego kubitu, jeśli wszystkie pozostałe są w stanie |1⟩.
         //Most(inputQubits) zwraca tablice z wyjątkiem ostatniego elementu.
@@ -90,7 +92,7 @@ namespace GroversAlgorithm {
                 X(q); // Aplikuje bramkę X, przekształcając stan wszystkich zer do stanu wszystkich jedynek.
             }
         } apply {
-            ReflectAboutAllOnes(inputQubits); // Aplikuje odbicie względem stanu wszystkich jedynek.
+            ReflectAboutAllOnes(inputQubits); 
         }
     }
 }

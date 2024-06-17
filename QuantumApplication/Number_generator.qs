@@ -37,7 +37,7 @@
 
         mutable bits = []; //In Q#, mutable is a keyword used to declare variables whose values can be changed after their initial assignment. 
         //This is in contrast to immutable variables, which cannot be changed once they are set.
-        let nBits = BitSizeI(max); // calculate bits that it nees to store the value
+        let nBits = BitSizeI(max); // calculate bits that it needs to store the value
         for idxBit in 1..nBits{ // for loop from 1 to nbits (inclusive)
             set bits += [GenerateRandomBit()];
         }

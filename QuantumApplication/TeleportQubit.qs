@@ -7,16 +7,17 @@ namespace TeleportQubit{
         let sign = false;
 
         let result = TeleportNonclassicalQubit(sign);
+		if (result == sign){
+			Message($"teleportacja się udała, na wejściu: {sign}, na wyjściu: {result}");
+		} else {
+			Message($"teleportacja nieudana}");
+		}
         return result;
     }
     operation QuantumTeleport (msg : Qubit, target : Qubit) : Unit {
         use middleMan = Qubit()
 		{
-			// On paper, we have 3 'rails' with a total of 2 Hadamard gates, 2 CNOT gates, 2 measurements, 
-			// and at the end either nothing, an X gate, a Z gate, or Z followed by X.
-			// We want to first entangle the target qubit with the middleMan qubit.  Then we'll do some entangling
-			// of the middleMan with the msg qubit.  Finally, a bit of measurement on the middleMan and msg qubit
-			// will tell us what needs to be done to the target qubit so that it is in the same state msg started in.
+			
 
 			H(middleMan);
 			CNOT(middleMan, target);
@@ -24,16 +25,17 @@ namespace TeleportQubit{
 			H(msg);
 			let msgMeasurement = M(msg);
 			let middlemanMeasurement = M(middleMan);
-						
-			if (msgMeasurement == One) { Z(target); }
-			if (middlemanMeasurement == One) { X(target);}	
+			
+			if (msgMeasurement == One) { Z(target); } 	//If I measure 10, then your qubit is in state a|0> - b|1>, so you need to apply a Z gate to it to get it into the right state. I send you a message saying as much.
+														//If I measure 11, then your qubit is in state a|1> - b|0>, so you need to apply a Z gate followed by an X gate to get it into the right state. I send you a message saying as much.
+
+			if (middlemanMeasurement == One) { X(target);}	//kubit jest w stanie a|1> + b|0>, dlatego działamy X by otrzymać dany stan a|0> + b|1>
 
 			Reset(middleMan);
 		}			   		 	  
     }
 
-	// So we have a QuantumTeleport(msg, target) function.  We can use this to send classical data by letting the msg
-	// qubit be a classical bit, i.e. a qubit in state |0> or |1> .
+	// tutaj rozważamy bardziej klasyczny stan, czyli nasz kubit jest albo |0> albo |1>
 
 	operation TeleportClassicalMessage(message : Bool) : Bool
 	{
@@ -43,11 +45,11 @@ namespace TeleportQubit{
 		{
 			let msg = teleportPair[0];
 			let target = teleportPair[1];
-			// These start out in the |0> state because we've just recruited them.
+			// zaczynają jako |0>
 
-			if (message) {X(msg);}		// If our message is 1, flip msg to |1>
+			if (message) {X(msg);}		// tutaj mamy po prostu NOT gate
 
-			QuantumTeleport(msg, target);	// Now the message has been teleported to target.  msg doesn't hold our message any more.
+			QuantumTeleport(msg, target);	// teleportacja
 			
 			if (M(target) == One)
 			{
@@ -67,19 +69,19 @@ namespace TeleportQubit{
 	operation TeleportNonclassicalQubit(sign : Bool) : Bool
 	{
 		mutable measurement = false;
-        Message("teleportation goes brr");
+        Message("teleportation");
 		use teleportPair = Qubit[2]
 		{
-			let msg = teleportPair[0];		// msg starts out as |0>
+			let msg = teleportPair[0];		//  |0>
 			let target = teleportPair[1];	//
 
 			if (sign) { X(msg); }			
-			H(msg);							// Now msg is 1/sqrt(2) * (|0> +/- |1>) , the +/- depending on our sign Bool.
+			H(msg);							//  msg - 1/sqrt(2) * (|0> +/- |1>) w zależności od tego jaką wartość miał sign
 
 			QuantumTeleport(msg, target);
-			// Now target is 1/sqrt(2) * (|0> +/- |1>), again depending on the original sign Bool value.
+			// target - 1/sqrt(2) * (|0> +/- |1>) w zależności od tego jaką wartość miał sign
 
-			H(target);						// Now target is |0> or |1>
+			H(target);						// target jest teraz albo |0> albo |1>
 			if (M(target) == One) {set measurement = true;}
 						
 			ResetAll(teleportPair);
